@@ -189,6 +189,7 @@ pub async fn clear<T: AsRef<Path>>(dir: T, names: Vec<String>) -> Result<(), Err
 pub async fn run(k: &str) -> Result<(), Error> {
 	let config: Config = file::read(TOML)?;
 	if let Some(script) = config.script(k) {
+		println!("{}", script);
 		let mut child: Child = Command::new(
 				if cfg!(target_os = "windows") { "cmd" } else { "sh" }
 			)
