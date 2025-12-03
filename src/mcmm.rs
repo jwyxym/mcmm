@@ -34,6 +34,11 @@ impl MCMM {
 			parameters: "关键词"
 		});
 		vec.push(MCMM{
+			options: "run",
+			functions: "执行命令",
+			parameters: "命令名"
+		});
+		vec.push(MCMM{
 			options: "clear, c",
 			functions: "清空",
 			parameters: ""
