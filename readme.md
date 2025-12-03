@@ -1,8 +1,9 @@
 <h1>Environment</h1>
 
+<img src="https://avatars.githubusercontent.com/u/5430905?s=200&v=4"/>
 <a href="https://rust-lang.org/">Install Rust</a>
 
-<h1>how to build</h1>
+<h1>How To Build</h1>
 
 ```bash
 git clone https://github.com/jwyxym/mcmm.git --depth 1
@@ -10,7 +11,7 @@ cd mcmm
 cargo build --release
 ```
 
-<h1>how to use</h1>
+<h1>How To Use</h1>
 
 ```bash
 +------------+-----------+----------------------+
@@ -28,7 +29,7 @@ cargo build --release
 +------------+-----------+----------------------+
 ```
 
-<h1>quick start</h1>
+<h1>Quick Start</h1>
 
 ```bash
 mcmm init 1.21.1 neoforge
