@@ -29,7 +29,7 @@ async fn main() -> Result<(), Error> {
 		).await,
 		"install" | "i" => tool::install().await,
 		"add" | "a" => if args.len() > 2 {
-			tool::add(&args[2]).await
+			tool::add(args.split_off(2)).await
 		} else { Err(anyhow!("请输入添加内容")) },
 		"search" | "s" => if args.len() > 2 {
 			tool::search(&args[2]).await

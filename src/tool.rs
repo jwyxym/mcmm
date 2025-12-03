@@ -70,13 +70,15 @@ pub async fn init(version: &str, loader: &str, dir: &str) -> Result<(), Error> {
 	while loader == String::from("") {
 		stdin().read_line(&mut loader).expect("");
 	}
-	spinner::new();
+	let s: ProgressBar = spinner::new();
 	let config: Config = Config::new(version.trim(), loader.trim(), dir);
-	file::write(TOML, config)
+	let result = file::write(TOML, config);
+	s.finish();
+	result
 }
 
 pub async fn install() -> Result<(), Error> {
-	spinner::new();
+	let s: ProgressBar = spinner::new();
 	let config: Config = file::read(TOML)?;
 	let dir: &str = config.dir();
 	create_dir_all(dir).map_err(|_| anyhow!("路径错误: {}", dir))?;
@@ -96,7 +98,9 @@ pub async fn install() -> Result<(), Error> {
 	for task in tasks {
 		let _ = task.await;
 	}
-	clear(dir, names).await
+	let result = clear(dir, names).await;
+	s.finish();
+	result
 }
 
 pub async fn search(name: &str) -> Result<(), Error> {
@@ -124,7 +128,7 @@ pub async fn search(name: &str) -> Result<(), Error> {
 			_ => {
 				if let Some(num) = input.trim().parse::<usize>().ok() {
 					if let Some(m) = list.index(num){
-						return add(m.id()).await;
+						return add(vec![m.id().to_string()]).await;
 					}
 				}
 				break;
@@ -134,21 +138,43 @@ pub async fn search(name: &str) -> Result<(), Error> {
 	Ok(())
 }
 
-pub async fn add(id: &str) -> Result<(), Error> {
-	spinner::new();
+pub async fn add(ids: Vec<String>) -> Result<(), Error> {
+	let s: ProgressBar = spinner::new();
 	let config: Config = file::read(TOML)?;
-	if let Ok(m) = request::search_mod(id).await {
-		if let Some(m) = m.chk(config.version(), config.loader()).file() {
-			let mut config: Config = file::read(TOML)?;
-			config.push(m.name(), m.url());
-			return file::write(TOML, config);
-		}
+	let version: String = config.version().to_string();
+	let loader: String = config.loader().to_string();
+	let mut tasks = Vec::new();
+	for id in ids.into_iter() {
+		let version: String = version.clone();
+		let loader: String = loader.clone();
+		let task = spawn(async move {
+			if let Ok(m) = request::search_mod(&id).await {
+				if let Some(m) = m.chk(&version, &loader).file() {
+					return Ok((m.name().to_string(), m.url().to_string()));
+				}
+			}
+			let err = anyhow!("添加mod失败: {}", id);
+			println!("{}", err);
+			Err(err)
+		});
+		tasks.push(task);
 	}
-	Err(anyhow!("添加mod失败: {}", id))
+	if let Ok(mut config) = file::read(TOML) {
+		for task in tasks {
+			if let Ok(i) = task.await {
+				if let Ok((name, url)) = i {
+					config.push(&name, &url);
+				}
+			}
+		}
+		let _ = file::write(TOML, config);
+	}
+	s.finish();
+	Ok(())
 }
 
 pub async fn clear<T: AsRef<Path>>(dir: T, names: Vec<String>) -> Result<(), Error> {
-	spinner::new();
+	let s: ProgressBar = spinner::new();
 	file::walk(dir, async |path, name, _| {
 		if !names.contains(&name.to_string()) {
 			if remove_file(path).is_err() {
@@ -156,6 +182,7 @@ pub async fn clear<T: AsRef<Path>>(dir: T, names: Vec<String>) -> Result<(), Err
 			}
 		}
 	}).await;
+	s.finish();
 	Ok(())
 }
 
