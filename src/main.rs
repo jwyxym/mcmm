@@ -20,6 +20,7 @@ pub const TOML: &str = "mods.toml";
 struct MCMM {
 	options: &'static str,
 	functions: &'static str,
+	parameters: &'static str,
 }
 
 impl MCMM {
@@ -27,23 +28,28 @@ impl MCMM {
 		let mut vec: Vec<MCMM> = Vec::new();
 		vec.push(MCMM{
 			options: "init",
-			functions: "初始化"
+			functions: "初始化",
+			parameters: ""
 		});
 		vec.push(MCMM{
 			options: "install, i",
-			functions: "下载"
+			functions: "下载",
+			parameters: ""
 		});
 		vec.push(MCMM{
 			options: "add, a",
-			functions: "添加"
+			functions: "添加",
+			parameters: "id(来自modrinth.com)"
 		});
 		vec.push(MCMM{
 			options: "search, s",
-			functions: "搜索"
+			functions: "搜索",
+			parameters: "关键词"
 		});
 		vec.push(MCMM{
 			options: "clear, c",
-			functions: "清空"
+			functions: "清空",
+			parameters: ""
 		});
 		vec
 	}
