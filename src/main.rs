@@ -1,4 +1,8 @@
 mod tool;
+mod mcmm;
+use mcmm::{
+	MCMM
+};
 
 use anyhow::{
 	Error,
@@ -9,51 +13,7 @@ use std::{
 	env
 };
 
-use tabled::{
-	Table,
-	Tabled
-};
-
 pub const TOML: &str = "mods.toml";
-
-#[derive(Tabled)]
-struct MCMM {
-	options: &'static str,
-	functions: &'static str,
-	parameters: &'static str,
-}
-
-impl MCMM {
-	pub fn new() -> Vec<MCMM> {
-		let mut vec: Vec<MCMM> = Vec::new();
-		vec.push(MCMM{
-			options: "init",
-			functions: "初始化",
-			parameters: ""
-		});
-		vec.push(MCMM{
-			options: "install, i",
-			functions: "下载",
-			parameters: ""
-		});
-		vec.push(MCMM{
-			options: "add, a",
-			functions: "添加",
-			parameters: "id(来自modrinth.com)"
-		});
-		vec.push(MCMM{
-			options: "search, s",
-			functions: "搜索",
-			parameters: "关键词"
-		});
-		vec.push(MCMM{
-			options: "clear, c",
-			functions: "清空",
-			parameters: ""
-		});
-		vec
-	}
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -78,9 +38,9 @@ async fn main() -> Result<(), Error> {
 			if args.len() > 2 { &args[2] } else { "mods" },
 			Vec::new()
 		).await,
-		_ => {
-			println!("{}", Table::new(MCMM::new()).to_string());
-			Ok(())
-		}
+		"run" | "r" =>  if args.len() > 2 {
+			tool::run(&args[2]).await
+		} else { Err(anyhow!("请输入命令")) },
+		_ => Ok(MCMM::log())
 	}
 }

@@ -9,13 +9,17 @@ use serde::{
 use std::{
 	collections::{
 		BTreeMap
+	},
+	option::{
+		Option
 	}
 };
 
 #[derive(Deserialize, Clone, Serialize)]
 pub struct Config {
 	server: ServerInfo,
-	mods : BTreeMap<String, String>
+	mods : BTreeMap<String, String>,
+	scripts : BTreeMap<String, String>,
 }
 
 #[derive(Deserialize, Clone, Serialize)]
@@ -34,7 +38,8 @@ impl Config {
 		};
 		Config {
 			server: info,
-			mods : BTreeMap::new()
+			mods : BTreeMap::new(),
+			scripts : BTreeMap::new(),
 		}
 	}
 
@@ -58,5 +63,9 @@ impl Config {
 
 	pub fn push(&mut self, k: &str, v: &str) -> () {
 		self.mods.insert(k.to_string(), v.to_string());
+	}
+
+	pub fn script(&self, k: &str) -> Option<&str> {
+		self.scripts.get(k).and_then(|s| Some(s.as_str()))
 	}
 }

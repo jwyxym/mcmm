@@ -29,7 +29,14 @@ use std::{
 		PathBuf
 	},
 	io::{
-		stdin
+		stdin,
+		BufRead,
+		BufReader
+	},
+	process::{
+		Command,
+		Stdio,
+		Child
 	}
 };
 
@@ -150,4 +157,28 @@ pub async fn clear<T: AsRef<Path>>(dir: T, names: Vec<String>) -> Result<(), Err
 		}
 	}).await;
 	Ok(())
+}
+
+pub async fn run(k: &str) -> Result<(), Error> {
+	let config: Config = file::read(TOML)?;
+	if let Some(script) = config.script(k) {
+		let mut child: Child = Command::new(
+				if cfg!(target_os = "windows") { "cmd" } else { "sh" }
+			)
+			.args([if cfg!(target_os = "windows") { "/C" } else { "-c" }, script])
+			.stdout(Stdio::piped())
+			.spawn()
+			.map_err(|_| anyhow!("命令执行失败: {}", script))?;
+		if let Some(stdout) = child.stdout.take() {
+			let reader = BufReader::new(stdout);
+			reader.lines().into_iter().for_each(|l| {
+				if let Ok(line) = l {
+					println!("{}", line);
+				}
+			});
+		}
+    	Ok(())
+	} else {
+		Err(anyhow!("读取命令失败: {}", k))
+	}
 }
