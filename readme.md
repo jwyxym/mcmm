@@ -38,3 +38,6 @@ mcmm add {id} #copy from modrinth.com
 # search mods
 mcmm search {keyword}
 ```
+
+<h1>留言：</h1>
+<s>可能有bug，不知道</s>
