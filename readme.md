@@ -1,3 +1,7 @@
+<h1>Environment</h1>
+
+<a href="https://rust-lang.org/">Install Rust</a>
+
 <h1>how to build</h1>
 
 ```bash
