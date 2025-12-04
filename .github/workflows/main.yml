@@ -7,7 +7,6 @@ on:
 
 jobs:
   build-windows:
-    name: Build and Release
     runs-on: windows-latest
     permissions:
       contents: write
@@ -71,16 +70,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release
-        uses: softprops/action-gh-release@v1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: release-latest
           name: release-latest
-          body: "Automatically created release"
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload
         uses: actions/upload-release-asset@v1
