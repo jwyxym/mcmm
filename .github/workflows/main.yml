@@ -31,8 +31,32 @@ jobs:
           name: mcmm.exe
           path: .\target\release\mcmm.exe
 
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Build Release
+        run: |
+          cargo build --release
+
+      - name: Upload File
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcmm
+          path: ./target/release/mcmm
+
   create-release:
-    needs: [build-windows]
+    needs: [build-windows, build-ubuntu]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -89,4 +113,14 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/mcmm.exe/mcmm.exe
           asset_name: mcmm.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/mcmm/mcmm
+          asset_name: mcmm
           asset_content_type: application/octet-stream
