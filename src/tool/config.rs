@@ -65,6 +65,14 @@ impl Config {
 		self.mods.insert(k.to_string(), v.to_string());
 	}
 
+	pub fn remove(&mut self, k: &str) -> Option<String> {
+		self.mods.remove(k)
+	}
+
+	pub fn include(&self, k: &str) -> bool {
+		self.mods.get(k).is_some()
+	}
+
 	pub fn script(&self, k: &str) -> Option<&str> {
 		self.scripts.get(k).and_then(|s| Some(s.as_str()))
 	}

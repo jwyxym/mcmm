@@ -1,6 +1,6 @@
 mod tool;
-mod mcmm;
-use mcmm::{
+mod log;
+use log::{
 	MCMM
 };
 
@@ -31,6 +31,9 @@ async fn main() -> Result<(), Error> {
 		"add" | "a" => if args.len() > 2 {
 			tool::add(args.split_off(2)).await
 		} else { Err(anyhow!("请输入添加内容")) },
+		"remove" | "r" => if args.len() > 2 {
+			tool::remove(args.split_off(2)).await
+		} else { Err(anyhow!("请输入删除内容")) },
 		"search" | "s" => if args.len() > 2 {
 			tool::search(&args[2]).await
 		} else { Err(anyhow!("请输入搜索内容")) },
@@ -38,7 +41,7 @@ async fn main() -> Result<(), Error> {
 			if args.len() > 2 { &args[2] } else { "mods" },
 			Vec::new()
 		).await,
-		"run" | "r" =>  if args.len() > 2 {
+		"run" =>  if args.len() > 2 {
 			tool::run(&args[2]).await
 		} else { Err(anyhow!("请输入命令")) },
 		_ => Ok(MCMM::log())

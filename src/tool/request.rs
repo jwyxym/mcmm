@@ -1,3 +1,10 @@
+use crate::{
+	TOML,
+	tool::{
+		file
+	}
+};
+
 use anyhow::{
 	Error,
 	anyhow
@@ -9,20 +16,25 @@ use reqwest::{
 };
 
 use tokio::{
+	spawn,
 	fs::{
 		File
 	},
 	io::{
 		AsyncWriteExt
+	},
+	task::{
+		JoinHandle
 	}
 };
 
 use std::{
-	path::{
-		PathBuf
-	},
 	fs::{
 		OpenOptions
+	},
+	path::{
+		Path,
+		PathBuf
 	}
 };
 
@@ -37,7 +49,12 @@ use fs2::{
 };
 
 use urlencoding::{
-	encode
+	encode,
+	decode
+};
+
+use url::{
+	Url
 };
 
 use crate::tool::{
@@ -101,4 +118,49 @@ pub async fn search_mod(id: &str) -> Result<ModInfos, Error> {
 	let content: Vec<ModInfo> = response.json::<Vec<ModInfo>>().await
 		.map_err(|e| anyhow!("解析 JSON 失败: {}", e))?;
 	Ok(ModInfos::new(content))
+}
+
+pub async fn tasks(ids: Vec<String>, version: String, loader: String, funcs: Vec<&str>) -> Vec<JoinHandle<Result<(String, String), Error>>> {
+	let mut tasks: Vec<JoinHandle<Result<(String, String), Error>>> = Vec::new();
+	for id in ids.into_iter() {
+		let version: String = version.clone();
+		let loader: String = loader.clone();
+		let chk_url: bool = funcs.contains(&"url");
+		let chk_id: bool = funcs.contains(&"url");
+		let chk_name: bool = funcs.contains(&"url");
+		let task = spawn(async move {
+			if chk_url && let Ok(url) = Url::parse(&id) {
+				if let Some(name) = url.path_segments()
+					.and_then(|i| i.last())
+					.and_then(|i| Some(decode(i))) {
+						if let Ok(name) = name {
+							let name: String = name.to_string();
+							let mut name: PathBuf = Path::new(&name).to_path_buf();
+							let query: Vec<&str> = id.split('?').collect();
+							if let Some(query) = query.last() && query.len() > 1 {
+								name = name.with_extension(format!("{}.jar", query));
+							} else if name.extension().is_none() {
+								name = name.with_extension("jar");
+							}
+							if let Some(name) = name.to_str() {
+								return Ok((name.to_string(), url.to_string()));
+							}
+						}
+					}
+			} else if chk_id && let Ok(m) = search_mod(&id).await {
+				if let Some(m) = m.chk(&version, &loader).file() {
+					return Ok((m.name().to_string(), m.url().to_string()));
+				}
+			} else if chk_name && let Ok(config) = file::read(TOML) {
+				if config.include(&id) {
+					return Ok((id, "".to_string()));
+				}
+			}
+			let err = anyhow!("删除mod失败: {}", id);
+			println!("{}", err);
+			Err(err)
+		});
+		tasks.push(task);
+	}
+	tasks
 }

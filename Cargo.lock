@@ -561,6 +561,7 @@ dependencies = [
  "serde_derive",
  "tabled",
  "tokio",
+ "url",
  "urlencoding",
  "walkdir",
 ]

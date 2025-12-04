@@ -143,27 +143,32 @@ pub async fn add(ids: Vec<String>) -> Result<(), Error> {
 	let config: Config = file::read(TOML)?;
 	let version: String = config.version().to_string();
 	let loader: String = config.loader().to_string();
-	let mut tasks = Vec::new();
-	for id in ids.into_iter() {
-		let version: String = version.clone();
-		let loader: String = loader.clone();
-		let task = spawn(async move {
-			if let Ok(m) = request::search_mod(&id).await {
-				if let Some(m) = m.chk(&version, &loader).file() {
-					return Ok((m.name().to_string(), m.url().to_string()));
-				}
-			}
-			let err = anyhow!("添加mod失败: {}", id);
-			println!("{}", err);
-			Err(err)
-		});
-		tasks.push(task);
-	}
+	let tasks: Vec<JoinHandle<Result<(String, String), Error>>> = request::tasks(ids, version, loader, vec!["url", "id"]).await;
 	if let Ok(mut config) = file::read(TOML) {
 		for task in tasks {
 			if let Ok(i) = task.await {
 				if let Ok((name, url)) = i {
 					config.push(&name, &url);
+				}
+			}
+		}
+		let _ = file::write(TOML, config);
+	}
+	s.finish();
+	Ok(())
+}
+
+pub async fn remove(ids: Vec<String>) -> Result<(), Error> {
+	let s: ProgressBar = spinner::new();
+	let config: Config = file::read(TOML)?;
+	let version: String = config.version().to_string();
+	let loader: String = config.loader().to_string();
+	let tasks: Vec<JoinHandle<Result<(String, String), Error>>> = request::tasks(ids, version, loader, vec!["name", "url", "id"]).await;
+	if let Ok(mut config) = file::read(TOML) {
+		for task in tasks {
+			if let Ok(i) = task.await {
+				if let Ok((name, _)) = i {
+					config.remove(&name);
 				}
 			}
 		}

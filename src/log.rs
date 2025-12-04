@@ -16,7 +16,7 @@ impl MCMM {
 		vec.push(MCMM{
 			options: "init",
 			functions: "初始化",
-			parameters: ""
+			parameters: "版本, 加载器"
 		});
 		vec.push(MCMM{
 			options: "install, i",
@@ -26,7 +26,12 @@ impl MCMM {
 		vec.push(MCMM{
 			options: "add, a",
 			functions: "添加",
-			parameters: "id(来自modrinth.com)"
+			parameters: "id (来自modrinth.com)"
+		});
+		vec.push(MCMM{
+			options: "remove, r",
+			functions: "删除",
+			parameters: "文件名 | id"
 		});
 		vec.push(MCMM{
 			options: "search, s",
