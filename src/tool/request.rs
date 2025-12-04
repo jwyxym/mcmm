@@ -147,13 +147,13 @@ pub async fn tasks(ids: Vec<String>, version: String, loader: String, funcs: Vec
 							}
 						}
 					}
+			} else if chk_name && id.ends_with(".jar") && let Ok(config) = file::read(TOML) {
+				if config.include(&id) {
+					return Ok((id, "".to_string()));
+				}
 			} else if chk_id && let Ok(m) = search_mod(&id).await {
 				if let Some(m) = m.chk(&version, &loader).file() {
 					return Ok((m.name().to_string(), m.url().to_string()));
-				}
-			} else if chk_name && let Ok(config) = file::read(TOML) {
-				if config.include(&id) {
-					return Ok((id, "".to_string()));
 				}
 			}
 			let err = anyhow!("删除mod失败: {}", id);
