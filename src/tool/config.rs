@@ -65,8 +65,12 @@ impl Config {
 		self.mods.insert(k.to_string(), v.to_string());
 	}
 
-	pub fn remove(&mut self, k: &str) -> Option<String> {
-		self.mods.remove(k)
+	pub fn remove_by_name(&mut self, k: &str) -> () {
+		self.mods.remove(k);
+	}
+
+	pub fn remove_by_url(&mut self, v: &str) -> () {
+		self.mods.retain(|_, i| i != v);
 	}
 
 	pub fn include(&self, k: &str) -> bool {

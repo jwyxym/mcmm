@@ -167,8 +167,13 @@ pub async fn remove(ids: Vec<String>) -> Result<(), Error> {
 	if let Ok(mut config) = file::read(TOML) {
 		for task in tasks {
 			if let Ok(i) = task.await {
-				if let Ok((name, _)) = i {
-					config.remove(&name);
+				if let Ok((name, url)) = i {
+					if url == String::from("") {
+						config.remove_by_name(&name);
+					} else {
+						config.remove_by_name(&name);
+						config.remove_by_url(&url);
+					}
 				}
 			}
 		}

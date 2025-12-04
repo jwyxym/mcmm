@@ -26,12 +26,12 @@ impl MCMM {
 		vec.push(MCMM{
 			options: "add, a",
 			functions: "添加",
-			parameters: "id (来自modrinth.com)"
+			parameters: "id (来自modrinth.com) | url"
 		});
 		vec.push(MCMM{
 			options: "remove, r",
 			functions: "删除",
-			parameters: "文件名 | id"
+			parameters: "文件名 | id | url"
 		});
 		vec.push(MCMM{
 			options: "search, s",

@@ -137,7 +137,7 @@ pub async fn tasks(ids: Vec<String>, version: String, loader: String, funcs: Vec
 							let name: String = name.to_string();
 							let mut name: PathBuf = Path::new(&name).to_path_buf();
 							let query: Vec<&str> = id.split('?').collect();
-							if let Some(query) = query.last() && query.len() > 1 {
+							if query.len() > 1 && let Some(query) = query.last() {
 								name = name.with_extension(format!("{}.jar", query));
 							} else if name.extension().is_none() {
 								name = name.with_extension("jar");
