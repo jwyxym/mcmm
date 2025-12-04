@@ -1,0 +1,93 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    name: Build and Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Build Release
+        run: |
+          cargo build --release
+        shell: cmd
+
+      - name: Upload File
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcmm.exe
+          path: .\target\release\mcmm.exe
+
+  create-release:
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build
+
+      - name: Delete old Release
+        run: |
+          TAG_NAME=release-latest
+          gh release delete "$TAG_NAME" --yes || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete old tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git fetch --tags
+          git tag -d release-latest || true
+          git push origin :refs/tags/release-latest || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag release-latest
+          git push origin release-latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: release-latest
+          name: release-latest
+          body: "Automatically created release"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/mcmm.exe/mcmm.exe
+          asset_name: mcmm.exe
+          asset_content_type: application/octet-stream
