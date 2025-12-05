@@ -95,7 +95,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Package Windows binary
+      - name: Package
         run: |
           cd build/x86_64-pc-windows-msvc
           zip -r ../../mcmm-x86_64-windows.zip .

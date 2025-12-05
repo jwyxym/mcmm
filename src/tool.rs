@@ -21,7 +21,6 @@ use anyhow::{
 use std::{
 	fs::{
 		create_dir_all,
-		read_to_string,
 		remove_file
 	},
 	path::{
@@ -38,10 +37,6 @@ use std::{
 		Stdio,
 		Child
 	}
-};
-
-use basic_toml::{
-	from_str
 };
 
 use tokio::{
@@ -104,8 +99,7 @@ pub async fn install() -> Result<(), Error> {
 }
 
 pub async fn search(name: &str) -> Result<(), Error> {
-	let file: String = read_to_string(TOML).map_err(|_| anyhow!("文件不存在: {}", TOML))?;
-	let config: Config = from_str(&file).map_err(|_| anyhow!("文件内容格式错误: {}", TOML))?;
+	let config: Config = file::read(TOML)?;
 	let mut offset: usize = 0;
 	let mut input: String = String::from("");
 	let mut list: Mods;
