@@ -14,6 +14,11 @@ impl MCMM {
 	pub fn new() -> Vec<MCMM> {
 		let mut vec: Vec<MCMM> = Vec::new();
 		vec.push(MCMM{
+			options: "new, n",
+			functions: "新建",
+			parameters: "文件夹, 版本, 加载器, Java路径"
+		});
+		vec.push(MCMM{
 			options: "init",
 			functions: "初始化",
 			parameters: "版本, 加载器"

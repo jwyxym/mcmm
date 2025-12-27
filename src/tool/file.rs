@@ -20,6 +20,10 @@ use std::{
 	}
 };
 
+use regex::{
+	Regex
+};
+
 use basic_toml::{
 	from_str,
 	to_string
@@ -65,4 +69,32 @@ pub fn write(toml: &str, config: Config) -> Result<(), Error> {
 pub fn read(toml: &str) -> Result<Config, Error> {
 	let file: String = read_to_string(toml).map_err(|_| anyhow!("文件不存在: {}", toml))?;
 	from_str(&file).map_err(|_| anyhow!("文件内容格式错误: {}", toml))
+}
+
+pub fn write_string(path: &str, string: &str) -> Result<(), Error> {
+	let mut file: File = OpenOptions::new()
+		.create(true)
+		.write(true)
+		.truncate(true)
+		.open(path)
+		.map_err(|_| anyhow!("文件写入错误{}", path))?;
+	file.lock_exclusive()?;
+	write!(file, "{}", string)
+		.map_err(|_| anyhow!("文件写入错误{}", path))?;
+	Ok(())
+}
+
+pub fn read_string(path: &str) -> Result<String, Error> {
+	Ok(read_to_string(path)?)
+}
+
+pub fn read_script(path: &str) -> Result<String, Error> {
+	let script: String = read_string(path)?;
+	let re: Regex = Regex::new(r"(?m)^java\s+(.*)$")?;
+	if let Some(scripts) = re.captures(&script) {
+		if let Some(script) = scripts.get(0) {
+			return Ok(script.as_str().trim().to_string());
+		}
+	}
+	Err(anyhow!(""))
 }

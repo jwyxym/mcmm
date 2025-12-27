@@ -22,6 +22,13 @@ async fn main() -> Result<(), Error> {
 		args.push(String::from(""));
 	}
 	match args[1].as_str() {
+		"new" | "n" => tool::new(
+			if args.len() > 2 { &args[2] } else { "" },
+			if args.len() > 3 { &args[3] } else { "" },
+			if args.len() > 4 { &args[4] } else { "" },
+			if args.len() > 5 { &args[5] } else { "" },
+			if args.len() > 6 { &args[6] } else { "mods" },
+		).await,
 		"init" => tool::init(
 			if args.len() > 2 { &args[2] } else { "" },
 			if args.len() > 3 { &args[3] } else { "" },

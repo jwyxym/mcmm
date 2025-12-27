@@ -38,6 +38,16 @@ pub struct Info {
 	url: String
 }
 
+#[derive(Deserialize, Clone)]
+pub struct NeoForge {
+	versions: Vec<String>
+}
+
+#[derive(Deserialize, Clone)]
+pub struct Fabric {
+	version: String
+}
+
 #[derive(Tabled)]
 pub struct ModsGrid {
 	key: usize,
@@ -133,5 +143,17 @@ impl Info {
 
 	pub fn url(&self) -> &str {
 		&self.url
+	}
+}
+
+impl NeoForge {
+	pub fn versions(&self) -> Vec<String> {
+		self.versions.clone()
+	}
+}
+
+impl Fabric {
+	pub fn version(&self) -> &str {
+		&self.version
 	}
 }

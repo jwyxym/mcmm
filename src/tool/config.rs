@@ -80,4 +80,8 @@ impl Config {
 	pub fn script(&self, k: &str) -> Option<&str> {
 		self.scripts.get(k).and_then(|s| Some(s.as_str()))
 	}
+
+	pub fn set_script(&mut self, k: &str, v: &str) -> () {
+		self.scripts.insert(k.to_string(), v.to_string());
+	}
 }
