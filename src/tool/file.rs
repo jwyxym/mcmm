@@ -93,7 +93,8 @@ pub fn read_script(path: &str) -> Result<String, Error> {
 	let re: Regex = Regex::new(r"(?m)^java\s+(.*)$")?;
 	if let Some(scripts) = re.captures(&script) {
 		if let Some(script) = scripts.get(0) {
-			return Ok(script.as_str().trim().to_string());
+			let script: &str = &script.as_str().trim()[4..];
+			return Ok(script.to_string());
 		}
 	}
 	Err(anyhow!(""))

@@ -30,6 +30,10 @@ use std::{
 	}
 };
 
+use regex::{
+	Regex
+};
+
 use tokio::{
 	spawn,
 	task::{
@@ -60,7 +64,9 @@ pub async fn new(path: &str, version: &str, loader: &str, java: &str, dir: &str)
 		println!("文件夹已存在：{}", path);
 	}
 	while path == String::from("") {
-		stdin().read_line(&mut path).expect("");
+		let mut p : String = String::from("");
+		stdin().read_line(&mut p).expect("");
+		path = p.trim().to_string();
 		let p: &Path = Path::new(&path);
 		if p.exists() {
 			path = String::from("");
@@ -79,9 +85,11 @@ pub async fn new(path: &str, version: &str, loader: &str, java: &str, dir: &str)
 	while loader == String::from("") {
 		stdin().read_line(&mut loader).expect("");
 	}
-	let mut config: Config = Config::new(version.trim(), loader.trim(), dir);
+	let version: &str = version.trim();
+	let loader: &str = loader.trim();
+	let mut config: Config = Config::new(version, loader, dir);
 	if let Some(toml_path) = Path::new(&path).join(TOML).to_str() {
-		match loader.as_str() {
+		match loader {
 			"forge" => {
 				let s: ProgressBar = spinner::new(100);
 				let url: String = request::forge(&version).await?;
@@ -104,8 +112,16 @@ pub async fn new(path: &str, version: &str, loader: &str, java: &str, dir: &str)
 				}
 				s.inc(10);
 				if let Some(p) = Path::new(&path).join(if cfg!(target_os = "windows") { "run.bat" } else { "run.sh" }).to_str() {
-					let script: String = file::read_script(p)?;
-					config.set_script("start", &format!("{}{} nogui", java,script));
+					if let Ok(script) = file::read_script(p) {
+						config.set_script("start", &format!("{}{} nogui", java, script));
+					} else {
+						file::walk(&path, async |_, name, _| {
+							let re: Regex = Regex::new(r"^forge-.+-universal\.jar$").unwrap();
+							if let Some(_) = re.captures(name) {
+								config.set_script("start",&format!("{} -jar {} nogui", java, name));
+							}
+						}).await;
+					}
 				}
 				s.inc(10);
 				s.finish_and_clear();
@@ -133,7 +149,7 @@ pub async fn new(path: &str, version: &str, loader: &str, java: &str, dir: &str)
 				s.inc(10);
 				if let Some(p) = Path::new(&path).join(if cfg!(target_os = "windows") { "run.bat" } else { "run.sh" }).to_str() {
 					let script: String = file::read_script(p)?;
-					config.set_script("start", &format!("{}{} nogui", java,script));
+					config.set_script("start", &format!("{}{} nogui", java, script));
 				}
 				s.inc(10);
 				s.finish_and_clear();
@@ -208,6 +224,7 @@ pub async fn install() -> Result<(), Error> {
 		let step: u64 = ((1 / tasks.len()) * 100) as u64;
 		for task in tasks {
 			let _ = task.await;
+			println!("{}", step);
 			s.inc(step)
 		}
 		let result = clear(dir, names).await;
