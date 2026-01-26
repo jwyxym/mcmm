@@ -221,10 +221,9 @@ pub async fn install() -> Result<(), Error> {
 	}).await;
 	if tasks.len() > 0 {
 		let s: ProgressBar = spinner::new(100);
-		let step: u64 = ((1 / tasks.len()) * 100) as u64;
+		let step: u64 = ((1.0 / tasks.len() as f64) * 100.0) as u64;
 		for task in tasks {
 			let _ = task.await;
-			println!("{}", step);
 			s.inc(step)
 		}
 		let result = clear(dir, names).await;
