@@ -219,18 +219,17 @@ pub async fn install() -> Result<(), Error> {
 			tasks.push(task);
 		}
 	}).await;
+	let s: ProgressBar = spinner::new(100);
 	if tasks.len() > 0 {
-		let s: ProgressBar = spinner::new(100);
 		let step: u64 = ((1.0 / tasks.len() as f64) * 100.0) as u64;
 		for task in tasks {
 			let _ = task.await;
 			s.inc(step)
 		}
-		let result = clear(dir, names).await;
-		s.finish_and_clear();
-		return result;
 	}
-	Ok(())
+	let result = clear(dir, names).await;
+	s.finish_and_clear();
+	return result;
 }
 
 pub async fn search(name: &str) -> Result<(), Error> {
